@@ -186,12 +186,13 @@ for (let r = 0; r < PLACES; r++) {
   perPlace[r]!.sort((a, b) => b.p - a.p || a.id - b.id);
   perPlace[r] = perPlace[r]!.slice(0, 20);
 }
-// Keep every place's named mass at or under 1 (a game holds one place at a time).
+// Keep every place's named mass strictly under 1 (a game holds one place at a time; the unnamed
+// share is what the scorer spreads). The cap leaves room for floating-point wobble in the sum.
 for (let r = 0; r < PLACES; r++) {
   const s = perPlace[r]!.reduce((x, y) => x + y.p, 0);
-  const scale = s > 1 ? 1 / s : 1;
+  const scale = s > 0.999 ? 0.999 / s : 1;
   for (const item of perPlace[r]!) {
-    const p = Math.max(0.0002, item.p * scale);
+    const p = Math.min(0.999, Math.max(0.0002, item.p * scale));
     rows.push({ universe_id: item.id, place: r + 1, p });
   }
 }
